@@ -30,7 +30,7 @@ CREATE TABLE customers (
 	password VARCHAR(255) NOT NULL
 );
 
-INSERT INTO customers (username, email, password) VALUES ("a", "a", "a");
+INSERT INTO customers (username, email, password) VALUES ("jorge123", "jorge123@gmail.com", "jorge123");
 SELECT * FROM customers;
 
 CREATE TABLE screenings (

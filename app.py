@@ -2,7 +2,9 @@ import customtkinter as ctk
 import re
 from connection import create_connection
 from entities.Movie import Movie
-from entities.Screening import Screening
+from entities.Customer import Customer
+
+import customtkinter as ctk
 
 connection = create_connection()
 cursor = connection.cursor()
@@ -25,9 +27,6 @@ def checkEmail(email):
         return True
 
     return False
-
-
-import customtkinter as ctk
 
 
 class Authentication(ctk.CTkFrame):
@@ -228,6 +227,9 @@ class Login(ctk.CTkFrame):
             self.status_label.configure(text="usuário não encontrado")
             return
 
+        self.controller.set_user(
+            Customer(customer[0], customer[1], customer[2], customer[3])
+        )
         self.controller.show_frame("Home")
 
     def clear_form(self):
@@ -772,15 +774,30 @@ class Seats(ctk.CTkFrame):
             (self.screening_id,),
         )
 
-        occupied_from_db = cursor.fetchall()
-
         occupied_seats = list(
             map(
                 lambda occupied_seat: (
                     int(occupied_seat[0]),
                     int(occupied_seat[1]),
                 ),
-                occupied_from_db,
+                cursor.fetchall(),
+            )
+        )
+
+        customer = self.controller.get_user()
+
+        cursor.execute(
+            "SELECT seat_row, seat_col FROM tickets WHERE customer_id = %s",
+            (customer.id,),
+        )
+
+        user_seats = list(
+            map(
+                lambda occupied_seat: (
+                    int(occupied_seat[0]),
+                    int(occupied_seat[1]),
+                ),
+                cursor.fetchall(),
             )
         )
 
@@ -792,8 +809,13 @@ class Seats(ctk.CTkFrame):
                 seat_coordinate = (row_index, col_index)
 
                 is_occupied = seat_coordinate in occupied_seats
+                is_user = seat_coordinate in user_seats
 
-                if is_occupied:
+                if is_user:
+                    color = "yellow"
+                    state = "disabled"
+                    command = None
+                elif is_occupied:
                     color = "red"
                     state = "disabled"
                     command = None
@@ -837,10 +859,12 @@ class Seats(ctk.CTkFrame):
         if not self.selected_seats:
             return
 
+        customer = self.controller.get_user()
+
         for row, col in self.selected_seats:
             cursor.execute(
                 "INSERT INTO tickets (seat_row, seat_col, customer_id, screening_id) VALUES (%s, %s, %s, %s)",
-                (row, col, 1, self.screening_id),
+                (row, col, customer.id, self.screening_id),
             )
 
         connection.commit()
@@ -896,6 +920,12 @@ class Application(ctk.CTk):
             frame.set_data(data)
 
         frame.tkraise()
+
+    def set_user(self, user):
+        self.user = user
+
+    def get_user(self):
+        return self.user
 
 
 if __name__ == "__main__":
