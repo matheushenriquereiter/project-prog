@@ -723,6 +723,9 @@ class Seats(ctk.CTkFrame):
         super().__init__(parent, fg_color=BG_MAIN)
         self.controller = controller
 
+        height = 40
+        width = 200
+
         self.screening_id = None
 
         self.selected_seats = []
@@ -739,6 +742,8 @@ class Seats(ctk.CTkFrame):
             self,
             text="Confirmar",
             state="disabled",
+            height=height,
+            width=width,
             fg_color=COLOR_BUTTON,
             hover_color=COLOR_HOVER,
             command=self.confirm_purchase,
@@ -748,11 +753,13 @@ class Seats(ctk.CTkFrame):
         return_button = ctk.CTkButton(
             self,
             text="Voltar",
+            height=height,
+            width=width,
             fg_color=COLOR_BUTTON,
             hover_color=COLOR_HOVER,
             command=lambda: controller.show_frame("ShowScreenings"),
         )
-        return_button.pack(pady=5)
+        return_button.pack()
 
         self.status_label = ctk.CTkLabel(self, text="")
         self.status_label.pack()
